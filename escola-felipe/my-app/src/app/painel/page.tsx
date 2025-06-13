@@ -1049,65 +1049,66 @@ export default function AdminPage() {
             </div>
             
             <div className="space-y-6">
-              {/* Agrupar vídeos por módulo usando allVideosForModal */}
-              {Object.entries(allVideosForModal.reduce((acc, video) => {
-                const modulo = video.modulo || 'Sem Módulo';
-                if (!acc[modulo]) {
-                  acc[modulo] = [];
-                }
-                acc[modulo].push(video);
-                return acc;
-              }, {} as { [key: string]: any[] })).sort(([modA], [modB]) => {
-                  // Extrair números dos títulos dos módulos para ordenação correta
-                  const numA = parseInt(modA.match(/\d+/)?.[0] || '0');
-                  const numB = parseInt(modB.match(/\d+/)?.[0] || '0');
-                  return numA - numB;
-              }).map(([modulo, videosDoModulo]) => {
-                if (videosDoModulo.length === 0) return null;
-                
-                return (
-                  <div key={modulo} className="border border-gray-700 rounded-lg p-4">
-                    <h3 className="text-lg font-medium mb-3">{modulo}</h3>
-                    <div className="space-y-2">
-                      {videosDoModulo.map((video) => (
-                        <div key={video.id} className="flex items-center justify-between bg-gray-700 p-3 rounded-md">
-                          <div className="flex-1">
-                            {/* O título já considera a personalização ao ser carregado em allVideosForModal */}
-                            <p className="font-medium">{video.titulo}</p> 
-                            <p className="text-sm text-gray-400">Duração: {video.duracao}</p>
-                          </div>
-                          <div className="flex items-center">
-                            <label className="inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="form-checkbox h-5 w-5 text-orange-500 rounded border-gray-500 focus:ring-orange-500"
-                                checked={isVideoLiberado(alunoSelecionado.id, video.id)}
-                                onChange={() => toggleVideoLiberadoParaAluno(alunoSelecionado.id, video.id)}
-                              />
-                              <span className="ml-2 text-sm">
-                                {isVideoLiberado(alunoSelecionado.id, video.id) ? "Liberado" : "Bloqueado"}
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+  {/* Agrupar vídeos por módulo usando allVideosForModal */}
+  {Object.entries(allVideosForModal.reduce((acc, video) => {
+    const modulo = video.modulo || 'Sem Módulo';
+    if (!acc[modulo]) {
+      acc[modulo] = [];
+    }
+    acc[modulo].push(video);
+    return acc;
+  }, {} as { [key: string]: any[] })).sort(([modA], [modB]) => {
+    // Extrair números dos títulos dos módulos para ordenação correta
+    const numA = parseInt(modA.match(/\d+/)?.[0] || '0');
+    const numB = parseInt(modB.match(/\d+/)?.[0] || '0');
+    return numA - numB;
+  }).map(([modulo, videosDoModulo]) => {
+    // Adicionando asserção de tipo aqui
+    const videos = videosDoModulo as any[];
+    if (videos.length === 0) return null;
+    return (
+      <div key={modulo} className="border border-gray-700 rounded-lg p-4">
+        <h3 className="text-lg font-medium mb-3">{modulo}</h3>
+        <div className="space-y-2">
+          {videos.map((video) => (
+            <div key={video.id} className="flex items-center justify-between bg-gray-700 p-3 rounded-md">
+              <div className="flex-1">
+                {/* O título já considera a personalização ao ser carregado em allVideosForModal */}
+                <p className="font-medium">{video.titulo}</p>
+                <p className="text-sm text-gray-400">Duração: {video.duracao}</p>
+              </div>
+              <div className="flex items-center">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-orange-500 rounded border-gray-500 focus:ring-orange-500"
+                    checked={isVideoLiberado(alunoSelecionado.id, video.id)}
+                    onChange={() => toggleVideoLiberadoParaAluno(alunoSelecionado.id, video.id)}
+                  />
+                  <span className="ml-2 text-sm">
+                    {isVideoLiberado(alunoSelecionado.id, video.id) ? "Liberado" : "Bloqueado"}
+                  </span>
+                </label>
+              </div>
             </div>
-            
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={fecharModalLiberarVideos}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
-              >
-                Salvar Alterações
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  })}
+</div>
+<div className="mt-6 flex justify-end">
+  <button
+    onClick={fecharModalLiberarVideos}
+    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+  >
+    Salvar Alterações
+  </button>
+</div>
+</div>
+</div>
+)}
+</div>
+);
 }
+
