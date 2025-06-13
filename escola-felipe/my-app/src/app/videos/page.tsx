@@ -288,7 +288,7 @@ export default function VideosPage() {
   const scrollCarousel = (moduleId: number, direction: 'left' | 'right') => {
     const carouselRef = carouselRefs.current[moduleId];
     if (carouselRef) {
-      const scrollAmount = 350; // Aumentado para acomodar cards mais largos
+      const scrollAmount = 280; // Ajustado para o novo tamanho dos cards (260px + margem)
       const currentScroll = carouselRef.scrollLeft;
       carouselRef.scrollTo({
         left: direction === 'right'
@@ -516,7 +516,7 @@ export default function VideosPage() {
                 {module.videos.map((video) => (
                   <div
                     key={video.id}
-                    className="flex-shrink-0 w-64 h-48 rounded-lg overflow-hidden shadow-lg border border-gray-700 hover:border-orange-500 transition-colors relative"
+                    className="flex-shrink-0 w-[260px] h-[440px] rounded-lg overflow-hidden shadow-lg border border-gray-700 hover:border-orange-500 transition-colors relative"
                   >
                     {!isVideoLiberadoParaUsuario(video.id) && !isAdmin && (
                       <div className="absolute inset-0 bg-gray-900 bg-opacity-75 z-10 backdrop-blur-[2px] flex items-center justify-center">
