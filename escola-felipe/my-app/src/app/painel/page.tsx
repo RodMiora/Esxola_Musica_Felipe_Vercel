@@ -414,7 +414,8 @@ export default function AdminPage() {
       }
     }
     
-    const alunoVideos = currentVideosLiberados[alunoIdStr] || [];
+    const alunoVideos = (currentVideosLiberados as {[key: string]: number[]})[alunoIdStr] || [];
+
     
     // Verificar se o vídeo já está liberado
     const videoIndex = alunoVideos.indexOf(videoId);
