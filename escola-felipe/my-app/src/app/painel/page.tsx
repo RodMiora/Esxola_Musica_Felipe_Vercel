@@ -349,7 +349,7 @@ export default function AdminPage() {
       module.videos.map(video => ({
         id: video.id,
         // Usar título personalizado se existir, senão o título padrão do módulo
-        titulo: currentVideoTitles[video.id] || video.title, 
+        titulo: (currentVideoTitles as {[key: number]: string})[video.id] || video.title, 
         modulo: module.title, // Usar o título do módulo diretamente
         duracao: video.duration,
       }))

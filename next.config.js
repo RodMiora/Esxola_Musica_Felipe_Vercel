@@ -6,6 +6,6 @@ module.exports = {
   }
 }
 
-I see you're encountering an error with the Next.js Image component. The error message indicates that you're trying to use images from `source.unsplash.com`, but this domain isn't properly configured in your Next.js configuration.
+// This comment appears to be misplaced and should be removed since it's not valid JavaScript code
 
-Looking at your existing `next.config.js` file, I can see that you already have the domain listed in the configuration:
+// The next.config.js file already includes the required domain configuration
