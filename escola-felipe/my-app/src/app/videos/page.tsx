@@ -505,21 +505,35 @@ export default function VideosPage() {
                   </svg>
                 </button>
               )}
-              {/* Carrossel de vídeos */}
+              {/* Carrossel de vídeos com altura mínima para acomodar os cards */}
               <div
                 ref={(el: HTMLDivElement | null) => {
                   carouselRefs.current[module.id] = el;
                 }}
                 className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                style={{ 
+                  scrollbarWidth: 'none', 
+                  msOverflowStyle: 'none',
+                  minHeight: '460px'  // Adicionando altura mínima para acomodar os cards
+                }}
               >
                 {module.videos.map((video) => (
+                  // Modificação completa do card de vídeo
                   <div
                     key={video.id}
-                    className="flex-shrink-0 w-[260px] h-[440px] rounded-lg overflow-hidden shadow-lg border border-gray-700 hover:border-orange-500 transition-colors relative"
+                    className="relative"
+                    style={{ 
+                      width: '260px', 
+                      height: '440px',
+                      flexShrink: 0,
+                      margin: '0 8px'
+                    }}
                   >
                     {!isVideoLiberadoParaUsuario(video.id) && !isAdmin && (
-                      <div className="absolute inset-0 bg-gray-900 bg-opacity-75 z-10 backdrop-blur-[2px] flex items-center justify-center">
+                      <div 
+                        className="absolute inset-0 bg-gray-900 bg-opacity-75 z-10 backdrop-blur-[2px] flex items-center justify-center"
+                        style={{ width: '260px', height: '440px' }}
+                      >
                         <div className="text-white text-opacity-90 text-lg font-bold bg-black bg-opacity-50 p-3 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6-4h12M9 9V7a3 3 0 0 1 6 0v2" />
@@ -529,61 +543,57 @@ export default function VideosPage() {
                         </div>
                       </div>
                     )}
-                    {/* Thumbnail do vídeo - área clicável */}
-                    <div
-                      className="relative w-full h-full overflow-hidden"
+                    
+                    <img
+                      src={video.thumbnail}
+                      alt="Thumbnail do vídeo"
+                      className="rounded-lg cursor-pointer shadow-lg border border-gray-700 hover:border-orange-500 transition-colors"
+                      style={{ 
+                        width: '260px', 
+                        height: '440px',
+                        objectFit: 'cover',
+                        filter: !isVideoLiberadoParaUsuario(video.id) && !isAdmin ? 'grayscale(1) brightness(0.6) contrast(1.2)' : 'none'
+                      }}
                       onClick={() => youtubeLinks[video.id] ? abrirVideoYoutube(video.id) : null}
-                      style={{ cursor: youtubeLinks[video.id] ? 'pointer' : 'default' }}
-                    >
-                      {/* Imagem de thumbnail */}
-                      <div
-                        className="absolute inset-0 bg-cover bg-center transition-all duration-300"
-                        style={{
-                          backgroundImage: `url(${video.thumbnail})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          backgroundRepeat: 'no-repeat',
-                          filter: !isVideoLiberadoParaUsuario(video.id) && !isAdmin ? 'grayscale(1) brightness(0.6) contrast(1.2)' : 'none'
-                        }}
-                      />
-                      {/* Gradiente e botões de ação */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent hover:from-black/50 transition-all duration-300">
-                        {/* Ícones para administradores */}
-                        {isAdmin && (
-                          <div className="absolute top-2 right-2 flex space-x-2 z-20">
-                            {/* Ícone do YouTube para administradores */}
-                            <button
-                              onClick={(e) => abrirModalYoutube(e, video)}
-                              className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors hover:scale-110 hover:shadow-lg hover:shadow-red-500/50 cursor-pointer transform transition-all duration-200 ease-in-out"
-                              title="Adicionar link do YouTube"
-                            >
-                              <YouTubeIcon size={16} />
-                            </button>
-                          </div>
-                        )}
-                        {/* Botão de play centralizado */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    />
+                    
+                    {/* Gradiente e botões de ação */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent hover:from-black/50 transition-all duration-300">
+                      {/* Ícones para administradores */}
+                      {isAdmin && (
+                        <div className="absolute top-2 right-2 flex space-x-2 z-20">
+                          {/* Ícone do YouTube para administradores */}
                           <button
-                            className="bg-orange-600 rounded-full p-3 transform hover:scale-110 transition-transform"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (youtubeLinks[video.id] && (isVideoLiberadoParaUsuario(video.id) || isAdmin)) {
-                                abrirVideoYoutube(video.id);
-                              }
-                            }}
+                            onClick={(e) => abrirModalYoutube(e, video)}
+                            className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors hover:scale-110 hover:shadow-lg hover:shadow-red-500/50 cursor-pointer transform transition-all duration-200 ease-in-out"
+                            title="Adicionar link do YouTube"
                           >
-                            {isVideoLiberadoParaUsuario(video.id) || isAdmin ? (
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            ) : (
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                              </svg>
-                            )}
+                            <YouTubeIcon size={16} />
                           </button>
                         </div>
+                      )}
+                      {/* Botão de play centralizado */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <button
+                          className="bg-orange-600 rounded-full p-3 transform hover:scale-110 transition-transform"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (youtubeLinks[video.id] && (isVideoLiberadoParaUsuario(video.id) || isAdmin)) {
+                              abrirVideoYoutube(video.id);
+                            }
+                          }}
+                        >
+                          {isVideoLiberadoParaUsuario(video.id) || isAdmin ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
