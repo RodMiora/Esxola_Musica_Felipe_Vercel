@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import './animations.css'; // Import the animations CSS file
 
@@ -28,7 +27,7 @@ const YouTubeIcon = ({ size = 16, className = "" }) => (
   </svg>
 );
 
-// Módulos de violão organizados sequencialmente - movidos para fora do componente
+// Módulos de violão organizados sequencialmente - definidos fora do componente
 const initialModules = [
   {
     id: 1,
@@ -36,110 +35,81 @@ const initialModules = [
     videos: [
       {
         id: 101,
-        title: 'Partes do violão',
-        duration: '12:30',
         thumbnail: '/imagens/Sem_titulo.jpg',
       },
       {
         id: 102,
-        title: 'Tipos de violão',
-        duration: '10:15',
         thumbnail: '/imagens/Postura.jpg',
       },
       {
         id: 103,
-        title: 'Afinação básica',
-        duration: '15:45',
         thumbnail: '/imagens/afinando.png',
         level: 'iniciante'
       },
       {
         id: 104,
-        title: 'Cuidados com o instrumento',
-        duration: '8:50',
         thumbnail: '/imagens/diagrama.png',
         level: 'iniciante'
       },
       {
         id: 105,
-        title: 'História do violão',
-        duration: '14:20',
         thumbnail: '/imagens/Sem_titulo.jpg',
         level: 'iniciante'
       },
       {
         id: 106,
-        title: 'Escolhendo seu primeiro violão',
-        duration: '11:35',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,buying',
         level: 'iniciante'
       },
       {
         id: 107,
-        title: 'Acessórios essenciais',
-        duration: '9:45',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,accessories',
         level: 'iniciante'
       }
     ]
   },
+  // Mantendo os outros módulos (removendo os títulos individuais)
   {
     id: 2,
     title: 'Módulo 2: Posicionando as Mãos e Postura',
     videos: [
       {
         id: 201,
-        title: 'Postura correta',
-        duration: '14:20',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,posture',
         level: 'iniciante'
       },
       {
         id: 202,
-        title: 'Posição da mão direita',
-        duration: '12:35',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,hand',
         level: 'iniciante'
       },
       {
         id: 203,
-        title: 'Posição da mão esquerda',
-        duration: '15:10',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,chord',
         level: 'iniciante'
       },
       {
         id: 204,
-        title: 'Exercícios de aquecimento',
-        duration: '10:10',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,practice',
         level: 'iniciante'
       },
       {
         id: 205,
-        title: 'Prevenção de lesões',
-        duration: '13:25',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,health',
         level: 'iniciante'
       },
       {
         id: 206,
-        title: 'Técnicas de relaxamento',
-        duration: '11:40',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,relax',
         level: 'iniciante'
       },
       {
         id: 207,
-        title: 'Exercícios para dedilhado',
-        duration: '16:15',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,fingers',
         level: 'iniciante-intermediario'
       },
       {
         id: 208,
-        title: 'Fortalecimento dos dedos',
-        duration: '12:50',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,strength',
         level: 'iniciante-intermediario'
       }
@@ -151,64 +121,46 @@ const initialModules = [
     videos: [
       {
         id: 301,
-        title: 'Acordes maiores',
-        duration: '18:45',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,chords',
         level: 'iniciante'
       },
       {
         id: 302,
-        title: 'Acordes menores',
-        duration: '16:20',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,minor',
         level: 'iniciante'
       },
       {
         id: 303,
-        title: 'Transição entre acordes',
-        duration: '15:25',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,transition',
         level: 'iniciante-intermediario'
       },
       {
         id: 304,
-        title: 'Primeira música completa',
-        duration: '20:00',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,song',
         level: 'iniciante-intermediario'
       },
       {
         id: 305,
-        title: 'Acordes com sétima',
-        duration: '17:30',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,seventh',
         level: 'intermediario'
       },
       {
         id: 306,
-        title: 'Acordes suspensos',
-        duration: '14:45',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,suspended',
         level: 'intermediario'
       },
       {
         id: 307,
-        title: 'Progressões harmônicas básicas',
-        duration: '19:15',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,progression',
         level: 'iniciante-intermediario'
       },
       {
         id: 308,
-        title: 'Campo harmônico maior',
-        duration: '22:10',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,harmony',
         level: 'intermediario'
       },
       {
         id: 309,
-        title: 'Acordes com pestana',
-        duration: '16:40',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,barre',
         level: 'intermediario'
       }
@@ -220,43 +172,31 @@ const initialModules = [
     videos: [
       {
         id: 401,
-        title: 'Batidas básicas',
-        duration: '15:30',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,strumming',
         level: 'iniciante'
       },
       {
         id: 402,
-        title: 'Ritmos populares',
-        duration: '18:20',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,rhythm',
         level: 'iniciante-intermediario'
       },
       {
         id: 403,
-        title: 'Técnica de palhetada',
-        duration: '14:15',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,pick',
         level: 'iniciante'
       },
       {
         id: 404,
-        title: 'Dedilhado simples',
-        duration: '16:40',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,fingerpicking',
         level: 'iniciante-intermediario'
       },
       {
         id: 405,
-        title: 'Ritmos latinos',
-        duration: '19:25',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,latin',
         level: 'intermediario'
       },
       {
         id: 406,
-        title: 'Técnicas percussivas',
-        duration: '17:10',
         thumbnail: 'https://source.unsplash.com/random/300x200/?guitar,percussion',
         level: 'intermediario'
       }
@@ -272,24 +212,24 @@ export default function VideosPage() {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [videosLiberados, setVideosLiberados] = useState<{[key: string]: number[]}>({});
-
+  
   // Adicionar estados para controlar a visibilidade das setas
   const [hoveredModule, setHoveredModule] = useState<number | null>(null);
   const [showLeftArrow, setShowLeftArrow] = useState<{[key: number]: boolean}>({});
   const [showRightArrow, setShowRightArrow] = useState<{[key: number]: boolean}>({});
-
+  
   // Adicionar estados para o modal de YouTube e links
   const [mostrarModalYoutube, setMostrarModalYoutube] = useState(false);
   const [videoSelecionado, setVideoSelecionado] = useState<any>(null);
   const [youtubeLinks, setYoutubeLinks] = useState<{[key: number]: string}>({});
-
+  
   // Estado para armazenar os módulos - inicializado com initialModules
   const [modulesList, setModulesList] = useState<typeof initialModules>(initialModules);
-
+  
   // Valores fixos para o equalizador inicial (evita problemas de hidratação)
   const staticBars = [0.6, 0.8, 0.7, 0.9, 0.6];
   const [miniBars, setMiniBars] = useState<number[]>(staticBars);
-
+  
   // Verificar se o usuário é administrador e carregar links do YouTube
   useEffect(() => {
     // Em um ambiente real, isso seria feito com um token JWT ou similar
@@ -299,7 +239,7 @@ export default function VideosPage() {
       const isAdminUser = username === 'administrador';
       setIsAdmin(isAdminUser);
       setCurrentUser(username);
-
+      
       // Buscar o ID do usuário atual para verificar permissões de vídeo
       if (username && username !== 'administrador') {
         const savedAlunos = localStorage.getItem('alunos');
@@ -314,47 +254,22 @@ export default function VideosPage() {
         }
       }
     };
-
+    
     checkAdmin();
-
+    
     // Carregar permissões de vídeos
     const savedVideosLiberados = localStorage.getItem('videosLiberados');
     if (savedVideosLiberados) {
       setVideosLiberados(JSON.parse(savedVideosLiberados));
     }
-
+    
     // Carregar links do YouTube salvos
     const savedLinks = localStorage.getItem('youtubeLinks');
     if (savedLinks) {
       setYoutubeLinks(JSON.parse(savedLinks));
     }
-
-    // Carregar títulos salvos do localStorage
-    const savedTitles = localStorage.getItem('videoTitles');
-    let updatedModules = [...initialModules]; // Usamos initialModules aqui em vez de modules
-
-    if (savedTitles) {
-      try {
-        const titlesMap = JSON.parse(savedTitles);
-        // Aplicar os títulos salvos aos módulos, mas manter os títulos dos módulos do código
-        updatedModules = updatedModules.map(module => {
-          const updatedVideos = module.videos.map(video => {
-            if (titlesMap[video.id]) {
-              return { ...video, title: titlesMap[video.id] };
-            }
-            return video;
-          });
-          return { ...module, videos: updatedVideos };
-        });
-      } catch (error) {
-        console.error('Erro ao carregar títulos salvos:', error);
-      }
-    }
-    
-    // Atualizar os módulos
-    setModulesList(updatedModules);
   }, []);
-
+  
   // Ativar animação apenas no cliente após montagem
   useEffect(() => {
     setIsMounted(true);
@@ -368,7 +283,7 @@ export default function VideosPage() {
       return () => clearInterval(interval);
     }
   }, []);
-
+  
   // Função para rolar o carrossel
   const scrollCarousel = (moduleId: number, direction: 'left' | 'right') => {
     const carouselRef = carouselRefs.current[moduleId];
@@ -383,7 +298,7 @@ export default function VideosPage() {
       });
     }
   };
-
+  
   // FUNÇÕES DE MANIPULAÇÃO DO MOUSE
   const handleMouseMove = (moduleId: number, event: React.MouseEvent<HTMLDivElement>) => {
     const carouselRef = carouselRefs.current[moduleId];
@@ -406,19 +321,22 @@ export default function VideosPage() {
       [moduleId]: mouseX < 100 && hasMoreLeft
     }));
   };
-
+  
   const handleMouseLeave = (moduleId: number) => {
     setShowLeftArrow(prev => ({...prev, [moduleId]: false}));
     setShowRightArrow(prev => ({...prev, [moduleId]: false}));
   };
-
+  
   // Função para abrir o modal de adicionar link do YouTube
   const abrirModalYoutube = (e: React.MouseEvent, video: any) => {
     e.stopPropagation(); // Impedir que o clique propague para o card do vídeo
-    setVideoSelecionado(video);
+    setVideoSelecionado({
+      ...video,
+      youtubeLink: youtubeLinks[video.id] || ''
+    });
     setMostrarModalYoutube(true);
   };
-
+  
   // Função para salvar o link do YouTube
   const salvarLinkYoutube = (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,7 +350,7 @@ export default function VideosPage() {
       setMostrarModalYoutube(false);
     }
   };
-
+  
   // Função para abrir o vídeo do YouTube
   const abrirVideoYoutube = (videoId: number) => {
     // Verificar se o vídeo está liberado para o usuário atual
@@ -446,7 +364,7 @@ export default function VideosPage() {
       window.open(link, '_blank');
     }
   };
-
+  
   // Função para verificar se um vídeo está liberado para o usuário atual
   const isVideoLiberadoParaUsuario = (videoId: number) => {
     // Administrador tem acesso a todos os vídeos
@@ -454,11 +372,12 @@ export default function VideosPage() {
     
     // Verificar se o usuário atual tem permissão para este vídeo
     if (currentUserId) {
-      return videosLiberados[currentUserId]?.includes(videoId) || false;
+      const userIdStr = currentUserId.toString();
+      return videosLiberados[userIdStr]?.includes(videoId) || false;
     }
     return false;
   };
-
+  
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col">
       {/* Estilos CSS para o mini equalizador */}
@@ -586,6 +505,7 @@ export default function VideosPage() {
                   </svg>
                 </button>
               )}
+              {/* Carrossel de vídeos */}
               <div
                 ref={(el: HTMLDivElement | null) => {
                   carouselRefs.current[module.id] = el;
@@ -596,11 +516,10 @@ export default function VideosPage() {
                 {module.videos.map((video) => (
                   <div
                     key={video.id}
-                    className="flex-shrink-0 w-65 rounded-lg overflow-hidden shadow-lg border border-gray-700 hover:border-orange-500 transition-colors relative"
+                    className="flex-shrink-0 w-64 h-48 rounded-lg overflow-hidden shadow-lg border border-gray-700 hover:border-orange-500 transition-colors relative"
                   >
                     {!isVideoLiberadoParaUsuario(video.id) && !isAdmin && (
-                      <div className="absolute inset-0 bg-gray-900 bg-opacity-75 z-0 backdrop-blur-[2px] flex items-center justify-center">
-                        {/* Overlay mais escuro e com maior opacidade para vídeos bloqueados */}
+                      <div className="absolute inset-0 bg-gray-900 bg-opacity-75 z-10 backdrop-blur-[2px] flex items-center justify-center">
                         <div className="text-white text-opacity-90 text-lg font-bold bg-black bg-opacity-50 p-3 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6-4h12M9 9V7a3 3 0 0 1 6 0v2" />
@@ -612,7 +531,7 @@ export default function VideosPage() {
                     )}
                     {/* Thumbnail do vídeo - área clicável */}
                     <div
-                      className="relative h-140 overflow-hidden"
+                      className="relative w-full h-full overflow-hidden"
                       onClick={() => youtubeLinks[video.id] ? abrirVideoYoutube(video.id) : null}
                       style={{ cursor: youtubeLinks[video.id] ? 'pointer' : 'default' }}
                     >
@@ -627,6 +546,7 @@ export default function VideosPage() {
                           filter: !isVideoLiberadoParaUsuario(video.id) && !isAdmin ? 'grayscale(1) brightness(0.6) contrast(1.2)' : 'none'
                         }}
                       />
+                      {/* Gradiente e botões de ação */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent hover:from-black/50 transition-all duration-300">
                         {/* Ícones para administradores */}
                         {isAdmin && (
@@ -641,6 +561,7 @@ export default function VideosPage() {
                             </button>
                           </div>
                         )}
+                        {/* Botão de play centralizado */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                           <button
                             className="bg-orange-600 rounded-full p-3 transform hover:scale-110 transition-transform"
@@ -669,19 +590,20 @@ export default function VideosPage() {
                 ))}
               </div>
             </div>
-            {/* Divisor entre módulos - modificado para usar modulesList.length */}
+            {/* Divisor entre módulos */}
             {module.id < modulesList.length && (
               <div className="border-b border-gray-700 mt-8"></div>
             )}
           </div>
         ))}
       </div>
+      
       {/* Modal para adicionar link do YouTube */}
       {mostrarModalYoutube && videoSelecionado && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
             <h2 className="text-xl font-bold mb-4 text-white">Adicionar Link do YouTube</h2>
-            <p className="text-gray-300 mb-4">Vídeo: {videoSelecionado.title}</p>
+            <p className="text-gray-300 mb-4">Vídeo ID: {videoSelecionado.id}</p>
             <form onSubmit={salvarLinkYoutube}>
               <div className="mb-4">
                 <label className="block text-white text-sm font-bold mb-2">Link do YouTube</label>
