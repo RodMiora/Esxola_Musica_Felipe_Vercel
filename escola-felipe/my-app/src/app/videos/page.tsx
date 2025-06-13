@@ -68,7 +68,6 @@ const initialModules = [
       }
     ]
   },
-  // Mantendo os outros módulos (removendo os títulos individuais)
   {
     id: 2,
     title: 'Módulo 2: Posicionando as Mãos e Postura',
@@ -518,7 +517,7 @@ export default function VideosPage() {
                 }}
               >
                 {module.videos.map((video) => (
-                  // Modificação completa do card de vídeo
+                  // Card de vídeo com ícone de cadeado ao passar o mouse
                   <div
                     key={video.id}
                     className="relative"
@@ -529,21 +528,7 @@ export default function VideosPage() {
                       margin: '0 8px'
                     }}
                   >
-                    {!isVideoLiberadoParaUsuario(video.id) && !isAdmin && (
-                      <div 
-                        className="absolute inset-0 bg-gray-900 bg-opacity-75 z-10 backdrop-blur-[2px] flex items-center justify-center"
-                        style={{ width: '260px', height: '440px' }}
-                      >
-                        <div className="text-white text-opacity-90 text-lg font-bold bg-black bg-opacity-50 p-3 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6-4h12M9 9V7a3 3 0 0 1 6 0v2" />
-                            <rect x="7" y="11" width="10" height="10" rx="2" strokeWidth={2} />
-                          </svg>
-                          BLOQUEADO
-                        </div>
-                      </div>
-                    )}
-                    
+                    {/* Imagem de thumbnail sempre visível */}
                     <img
                       src={video.thumbnail}
                       alt="Thumbnail do vídeo"
@@ -572,16 +557,18 @@ export default function VideosPage() {
                           </button>
                         </div>
                       )}
-                      {/* Botão de play centralizado */}
+                      
+                      {/* Botão centralizado - Play ou Cadeado dependendo do estado */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <button
-                          className="bg-orange-600 rounded-full p-3 transform hover:scale-110 transition-transform"
+                          className={`rounded-full p-3 transform hover:scale-110 transition-transform ${isVideoLiberadoParaUsuario(video.id) || isAdmin ? 'bg-orange-600' : 'bg-gray-800 border-2 border-red-500'}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (youtubeLinks[video.id] && (isVideoLiberadoParaUsuario(video.id) || isAdmin)) {
                               abrirVideoYoutube(video.id);
                             }
                           }}
+                          disabled={!isVideoLiberadoParaUsuario(video.id) && !isAdmin}
                         >
                           {isVideoLiberadoParaUsuario(video.id) || isAdmin ? (
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -589,7 +576,7 @@ export default function VideosPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                           )}
