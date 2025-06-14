@@ -59,8 +59,8 @@ export default function LoginPage() {
   };
 
   return (
-    // Container principal - muda de coluna para linha em telas médias e maiores
-    <div className="h-screen w-screen bg-gray-900 flex flex-col md:flex-row overflow-hidden">
+    // Container principal com posição relativa para o divisor absoluto
+    <div className="h-screen w-screen bg-gray-900 flex flex-col md:flex-row overflow-hidden relative">
       {/* Coluna Esquerda - em mobile fica na segunda posição */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 order-2 md:order-1">
         <form
@@ -182,8 +182,9 @@ export default function LoginPage() {
         </div>
       </div>
       
-      {/* Divisor Vertical - visível apenas em desktop */}
-      <div className="hidden md:block w-[10px] bg-gradient-to-b from-gray-700 via-orange-500 to-gray-700" />
+      {/* Divisor Vertical com posicionamento absoluto para garantir centralização */}
+      <div className="hidden md:block w-[10px] bg-gradient-to-b from-gray-700 via-orange-500 to-gray-700 absolute left-1/2 top-0 bottom-0 transform -translate-x-1/2">
+      </div>
       
       {/* Coluna Direita - em mobile fica na primeira posição */}
       <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black p-4 order-1 md:order-2">
