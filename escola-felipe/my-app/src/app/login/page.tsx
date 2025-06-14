@@ -6,27 +6,18 @@ const Equalizer = dynamic(
   () => import('@/components/Equalizer'),
   {
     ssr: false,
-    loading: () => <div className="w-full h-[400px] bg-gray-800 animate-pulse rounded-lg" />
+    loading: () => <div className="w-full h-[200px] md:h-[400px] bg-gray-800 animate-pulse rounded-lg" />
   }
 );
-/*
- * CONFIGURAÇÃO INICIAL
- * Layout dividido em duas colunas iguais
- * - Formulário de login à esquerda com validação básica
- * - Divisor vertical com gradiente laranja central
- * - Equalizador dinâmico (carregamento client-side) com placeholder
- * - Links sociais estilizados abaixo do formulário
- * - Sistema de roteamento para /videos após login
- */
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Adicionando estado para controlar visibilidade da senha
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  // Removendo a função handleSubmit antiga
-  // E usando apenas a função handleLogin corrigida
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -38,7 +29,7 @@ export default function LoginPage() {
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('username', email);
         localStorage.setItem('isAdmin', 'true');
-        router.push('/videos'); // Alterado para redirecionar para /videos em vez de /painel
+        router.push('/videos');
         return;
       }
       // Verificar se é um aluno cadastrado
@@ -66,18 +57,17 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-  // A função handleLogin foi removida pois era duplicada
-  // Estamos usando apenas a função handleSubmit acima que já implementa a mesma funcionalidade
+
   return (
-    // Pai: ocupa a tela inteira em altura e largura
-    <div className="h-screen w-screen bg-gray-900 flex">
-      {/* Coluna Esquerda (50%) */}
-      <div className="flex-1 flex flex-col items-center justify-center">
+    // Container principal - muda de coluna para linha em telas médias e maiores
+    <div className="h-screen w-screen bg-gray-900 flex flex-col md:flex-row overflow-hidden">
+      {/* Coluna Esquerda - em mobile fica na segunda posição */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 order-2 md:order-1">
         <form
           onSubmit={handleSubmit}
-          className="bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-md border border-gray-700"
+          className="bg-gray-800 p-6 md:p-8 rounded-lg shadow-md w-full max-w-md border border-gray-700"
         >
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {error && (
               <div className="bg-red-600 bg-opacity-90 border border-red-700 text-white px-4 py-3 rounded">
                 {error}
@@ -164,8 +154,9 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-        {/* Links sociais centralizados abaixo do formulário */}
-        <div className="mt-8 flex space-x-4 justify-center">
+        
+        {/* Links sociais */}
+        <div className="mt-6 md:mt-8 flex space-x-4 justify-center">
           <a
             href="https://www.instagram.com/felipe.couttinho?igsh=MWhjd3R6a3YxdXFsaQ%3D%3D"
             target="_blank"
@@ -190,24 +181,25 @@ export default function LoginPage() {
           </a>
         </div>
       </div>
-      {/* Divisor Vertical */}
-      <div className="w-[10px] bg-gradient-to-b from-gray-700 via-orange-500 to-gray-700" />
-      {/* Coluna Direita (50%) - APENAS ALTERANDO A POSIÇÃO VERTICAL */}
-<div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black">
-  <div className="flex flex-col items-center w-full" style={{ transform: 'translateY(-25%)' }}>
-    <div className="w-full max-w-[800px] h-[400px]">
-      <Equalizer className="w-full" />
+      
+      {/* Divisor Vertical - visível apenas em desktop */}
+      <div className="hidden md:block w-[10px] bg-gradient-to-b from-gray-700 via-orange-500 to-gray-700" />
+      
+      {/* Coluna Direita - em mobile fica na primeira posição */}
+      <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black p-4 order-1 md:order-2">
+        <div className="flex flex-col items-center w-full">
+          <div className="w-full max-w-[800px] h-[200px] md:h-[400px]">
+            <Equalizer className="w-full" />
+          </div>
+          <h1 className="text-3xl md:text-5xl font-sans text-gray-100 mt-4 tracking-wide text-center w-full">
+            Escola de música
+            <br />
+            <span className="text-gray-100 block">
+              Coutinho
+            </span>
+          </h1>
+        </div>
+      </div>
     </div>
-    <h1 className="text-5xl font-sans text-gray-100 mt-4 tracking-wide text-center w-full">
-      Escola de música
-      <br />
-      <span className="text-gray-100 block">
-        Coutinho
-      </span>
-    </h1>
-  </div>
-</div>
-</div>
-);  {/* Fechamento do return */}
-}  {/* Fechamento da função LoginPage */}
-
+  );
+}
