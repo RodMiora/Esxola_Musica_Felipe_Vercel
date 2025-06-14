@@ -194,7 +194,7 @@ export default function LoginPage() {
       <div className="w-[10px] bg-gradient-to-b from-gray-700 via-orange-500 to-gray-700" />
       {/* Coluna Direita (50%) - APENAS ALTERANDO A POSIÇÃO VERTICAL */}
       <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black">
-        <div className="flex flex-col items-center w-full" style={{ transform: 'translateY(-5%)' }}>
+        <div className="flex flex-col items-center w-full" style={{ transform: 'translateY(-10%)' }}>
           <div className="w-full max-w-[800px] h-[400px]">
             <Equalizer className="w-full" />
           </div>
