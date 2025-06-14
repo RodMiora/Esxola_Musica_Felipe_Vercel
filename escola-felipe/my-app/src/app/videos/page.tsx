@@ -442,10 +442,19 @@ export default function VideosPage() {
               Painel de Administração
             </button>
           )}
-          <button
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-base font-medium rounded-md transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-red-500/50"
-            onClick={() => window.location.href = 'http://localhost:3000/login'}
-          >
+         <button
+    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-base font-medium rounded-md transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-red-500/50"
+    onClick={() => {
+      // Limpar localStorage
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('username');
+      localStorage.removeItem('isAdmin');
+      localStorage.removeItem('alunoId');
+      
+      // Redirecionar para a raiz usando window.location.href
+      window.location.href = '/';
+    }}
+  >
             SAIR
           </button>
         </div>

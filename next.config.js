@@ -1,11 +1,33 @@
-module.exports = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Configurações de imagens existentes
   images: {
     domains: ['localhost', 'source.unsplash.com'],
     formats: ['image/avif', 'image/webp'],
-    unoptimized: true // Adicione esta linha se estiver usando SSG
-  }
+    unoptimized: true
+  },
+  
+  // Tratamento de rotas e redirecionamentos
+  async rewrites() {
+    return [
+      {
+        source: '/login',
+        destination: '/',
+      },
+      // Redireciona qualquer rota desconhecida para a página inicial
+      {
+        source: '/:path*',
+        destination: '/',
+        has: [
+          {
+            type: 'header',
+            key: 'x-redirected',
+            value: '(?!true)',
+          },
+        ],
+      },
+    ];
+  },
 }
 
-// This comment appears to be misplaced and should be removed since it's not valid JavaScript code
-
-// The next.config.js file already includes the required domain configuration
+module.exports = nextConfig;
