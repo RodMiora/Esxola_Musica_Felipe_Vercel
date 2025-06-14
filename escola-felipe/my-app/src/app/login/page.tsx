@@ -2,11 +2,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
+
 const Equalizer = dynamic(
   () => import('@/components/Equalizer'),
   {
     ssr: false,
-    loading: () => <div className="w-full h-[200px] md:h-[400px] bg-gray-800 animate-pulse rounded-lg" />
+    loading: () => <div className="w-full h-[150px] sm:h-[200px] md:h-[400px] bg-gray-800 animate-pulse rounded-lg" />
   }
 );
 
@@ -22,6 +23,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
     try {
       // Verificar credenciais de administrador
       if ((email === "admin" && password === "123456") ||
@@ -32,6 +34,7 @@ export default function LoginPage() {
         router.push('/videos');
         return;
       }
+
       // Verificar se é um aluno cadastrado
       const alunosSalvos = localStorage.getItem('alunos');
       if (alunosSalvos) {
@@ -39,6 +42,7 @@ export default function LoginPage() {
         const aluno = alunos.find(
           (a: any) => a.login === email && a.senha === password
         );
+        
         if (aluno) {
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('username', email);
@@ -48,6 +52,7 @@ export default function LoginPage() {
           return;
         }
       }
+
       // Se chegou aqui, as credenciais são inválidas
       setError("Nome de usuário ou senha incorretos");
     } catch (error) {
@@ -73,6 +78,7 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
+
             <div>
               <label
                 htmlFor="email"
@@ -90,6 +96,7 @@ export default function LoginPage() {
                 required
               />
             </div>
+
             <div>
               <label
                 htmlFor="password"
@@ -126,6 +133,7 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
             <div className="flex items-center justify-between">
               <label className="flex items-center space-x-2">
                 <input
@@ -135,6 +143,7 @@ export default function LoginPage() {
                 <span className="text-sm text-gray-300">Lembrar-me</span>
               </label>
             </div>
+
             <button
               type="submit"
               className="w-full bg-orange-600 text-white py-3 px-4 rounded-md hover:bg-orange-700 transition-colors duration-200"
@@ -154,7 +163,7 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-        
+
         {/* Links sociais */}
         <div className="mt-6 md:mt-8 flex space-x-4 justify-center">
           <a
@@ -181,15 +190,16 @@ export default function LoginPage() {
           </a>
         </div>
       </div>
-      
+
       {/* Divisor Vertical com posicionamento absoluto para garantir centralização */}
       <div className="hidden md:block w-[10px] bg-gradient-to-b from-gray-700 via-orange-500 to-gray-700 absolute left-1/2 top-0 bottom-0 transform -translate-x-1/2">
       </div>
-      
+
       {/* Coluna Direita - em mobile fica na primeira posição */}
       <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black p-4 order-1 md:order-2">
         <div className="flex flex-col items-center w-full">
-          <div className="w-full max-w-[800px] h-[200px] md:h-[400px]">
+          {/* ALTERAÇÃO APLICADA AQUI */}
+          <div className="w-full max-w-[800px] h-[150px] sm:h-[200px] md:h-[400px]">
             <Equalizer className="w-full" />
           </div>
           <h1 className="text-3xl md:text-5xl font-sans text-gray-100 mt-4 tracking-wide text-center w-full">
