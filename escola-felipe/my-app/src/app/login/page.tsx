@@ -193,20 +193,21 @@ export default function LoginPage() {
       {/* Divisor Vertical */}
       <div className="w-[10px] bg-gradient-to-b from-gray-700 via-orange-500 to-gray-700" />
       {/* Coluna Direita (50%) - APENAS ALTERANDO A POSIÇÃO VERTICAL */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black">
-        <div className="flex flex-col items-center w-full" style={{ transform: 'translateY(-25%)' }}>
-          <div className="w-full max-w-[800px] h-[400px]">
-            <Equalizer className="w-full" />
-          </div>
-          <h1 className="text-5xl font-sans text-gray-100 mt-4 tracking-wide">
-            Escola de música
-            <br />
-            <span className="text-gray-100">
-              Coutinho
-            </span>
-          </h1>
-        </div>
-      </div>
+<div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black">
+  <div className="flex flex-col items-center w-full" style={{ transform: 'translateY(-25%)' }}>
+    <div className="w-full max-w-[800px] h-[400px]">
+      <Equalizer className="w-full" />
     </div>
-  );
-}
+    <h1 className="text-5xl font-sans text-gray-100 mt-4 tracking-wide text-center w-full">
+      Escola de música
+      <br />
+      <span className="text-gray-100 block">
+        Coutinho
+      </span>
+    </h1>
+  </div>
+</div>
+</div>
+);  {/* Fechamento do return */}
+}  {/* Fechamento da função LoginPage */}
+
