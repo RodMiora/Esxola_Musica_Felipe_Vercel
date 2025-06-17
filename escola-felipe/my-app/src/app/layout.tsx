@@ -1,9 +1,6 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-
-// Adicione os logs de depuração
-console.log('Ambiente:', process.env.NODE_ENV);
-console.log('Tailwind CSS carregando em:', typeof window !== 'undefined' ? 'Cliente' : 'Servidor');
 
 export const metadata: Metadata = {
   title: "Escola de Música",
@@ -15,9 +12,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Log adicional na função de layout
-  console.log('Layout renderizado no ambiente:', process.env.NODE_ENV);
-  
   return (
     <html lang="pt-BR">
       <head>

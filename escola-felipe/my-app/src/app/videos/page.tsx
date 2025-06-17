@@ -14,6 +14,16 @@ const Equalizer = dynamic(
 );
 
 // Componente personalizado para o ícone do YouTube
+type Video = {
+  id: number;
+  thumbnail: string;
+  level?: string;
+}
+type Module = {
+  id: number;
+  title: string;
+  videos: Video[];
+}
 const YouTubeIcon = ({ size = 16, className = "" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -211,35 +221,23 @@ export default function VideosPage() {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [videosLiberados, setVideosLiberados] = useState<{[key: string]: number[]}>({});
-  
-  // Adicionar estados para controlar a visibilidade das setas
   const [hoveredModule, setHoveredModule] = useState<number | null>(null);
   const [showLeftArrow, setShowLeftArrow] = useState<{[key: number]: boolean}>({});
   const [showRightArrow, setShowRightArrow] = useState<{[key: number]: boolean}>({});
-  
-  // Adicionar estados para o modal de YouTube e links
+  const [notificacao, setNotificacao] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
   const [mostrarModalYoutube, setMostrarModalYoutube] = useState(false);
-  const [videoSelecionado, setVideoSelecionado] = useState<any>(null);
+  const [videoSelecionado, setVideoSelecionado] = useState<(Video & { youtubeLink?: string }) | null>(null);
   const [youtubeLinks, setYoutubeLinks] = useState<{[key: number]: string}>({});
-  
-  // Estado para armazenar os módulos - inicializado com initialModules
-  const [modulesList, setModulesList] = useState<typeof initialModules>(initialModules);
-  
-  // Valores fixos para o equalizador inicial (evita problemas de hidratação)
+  const [modulesList, setModulesList] = useState<Module[]>(initialModules);
   const staticBars = [0.6, 0.8, 0.7, 0.9, 0.6];
   const [miniBars, setMiniBars] = useState<number[]>(staticBars);
-  
-  // Verificar se o usuário é administrador e carregar links do YouTube
+
   useEffect(() => {
-    // Em um ambiente real, isso seria feito com um token JWT ou similar
-    // Aqui estamos simulando com localStorage
     const checkAdmin = () => {
       const username = localStorage.getItem('username');
       const isAdminUser = username === 'administrador';
       setIsAdmin(isAdminUser);
       setCurrentUser(username);
-      
-      // Buscar o ID do usuário atual para verificar permissões de vídeo
       if (username && username !== 'administrador') {
         const savedAlunos = localStorage.getItem('alunos');
         if (savedAlunos) {
@@ -247,32 +245,24 @@ export default function VideosPage() {
           const currentUserData = alunos.find((a: any) => a.login === username);
           if (currentUserData) {
             setCurrentUserId(currentUserData.id);
-            // Atualizar o currentUser para mostrar o nome do aluno em vez do login
             setCurrentUser(currentUserData.nome);
           }
         }
       }
     };
-    
     checkAdmin();
-    
-    // Carregar permissões de vídeos
     const savedVideosLiberados = localStorage.getItem('videosLiberados');
     if (savedVideosLiberados) {
       setVideosLiberados(JSON.parse(savedVideosLiberados));
     }
-    
-    // Carregar links do YouTube salvos
     const savedLinks = localStorage.getItem('youtubeLinks');
     if (savedLinks) {
       setYoutubeLinks(JSON.parse(savedLinks));
     }
   }, []);
-  
-  // Ativar animação apenas no cliente após montagem
+
   useEffect(() => {
     setIsMounted(true);
-    // Iniciar animação apenas no cliente
     if (typeof window !== 'undefined') {
       const interval = setInterval(() => {
         setMiniBars(prev => prev.map(() =>
@@ -282,12 +272,11 @@ export default function VideosPage() {
       return () => clearInterval(interval);
     }
   }, []);
-  
-  // Função para rolar o carrossel
+
   const scrollCarousel = (moduleId: number, direction: 'left' | 'right') => {
     const carouselRef = carouselRefs.current[moduleId];
     if (carouselRef) {
-      const scrollAmount = 280; // Ajustado para o novo tamanho dos cards (260px + margem)
+      const scrollAmount = 280;
       const currentScroll = carouselRef.scrollLeft;
       carouselRef.scrollTo({
         left: direction === 'right'
@@ -297,49 +286,54 @@ export default function VideosPage() {
       });
     }
   };
-  
-  // FUNÇÕES DE MANIPULAÇÃO DO MOUSE
+
   const handleMouseMove = (moduleId: number, event: React.MouseEvent<HTMLDivElement>) => {
     const carouselRef = carouselRefs.current[moduleId];
     if (!carouselRef) return;
-    
     const container = event.currentTarget;
     const mouseX = event.clientX - container.getBoundingClientRect().left;
     const containerWidth = container.offsetWidth;
-    
     const hasMoreRight = carouselRef.scrollWidth > carouselRef.offsetWidth + carouselRef.scrollLeft;
     const hasMoreLeft = carouselRef.scrollLeft > 0;
-    
     setShowRightArrow(prev => ({
       ...prev,
       [moduleId]: mouseX > containerWidth - 100 && hasMoreRight
     }));
-    
     setShowLeftArrow(prev => ({
       ...prev,
       [moduleId]: mouseX < 100 && hasMoreLeft
     }));
   };
-  
   const handleMouseLeave = (moduleId: number) => {
     setShowLeftArrow(prev => ({...prev, [moduleId]: false}));
     setShowRightArrow(prev => ({...prev, [moduleId]: false}));
   };
-  
+
   // Função para abrir o modal de adicionar link do YouTube
   const abrirModalYoutube = (e: React.MouseEvent, video: any) => {
-    e.stopPropagation(); // Impedir que o clique propague para o card do vídeo
+    e.stopPropagation();
     setVideoSelecionado({
       ...video,
       youtubeLink: youtubeLinks[video.id] || ''
     });
     setMostrarModalYoutube(true);
   };
-  
-  // Função para salvar o link do YouTube
+
+  // Função para validar o link do YouTube
+  function validarYoutubeURL(url: string) {
+    return /^https:\/\/(www\.)?youtube\.com\/watch\?v=/.test(url) || /^https:\/\/youtu\.be\//.test(url);
+  }
+
+  // Função para salvar o link do YouTube — agora com validação
   const salvarLinkYoutube = (e: React.FormEvent) => {
     e.preventDefault();
     if (videoSelecionado && videoSelecionado.youtubeLink) {
+      // VALIDAÇÃO:
+      if (!validarYoutubeURL(videoSelecionado.youtubeLink)) {
+        setNotificacao({tipo:"erro", texto:"Insira um link válido do YouTube!"});
+        setTimeout(() => setNotificacao(null), 2700);
+        return;
+      }
       const novosLinks = {
         ...youtubeLinks,
         [videoSelecionado.id]: videoSelecionado.youtubeLink
@@ -347,38 +341,44 @@ export default function VideosPage() {
       setYoutubeLinks(novosLinks);
       localStorage.setItem('youtubeLinks', JSON.stringify(novosLinks));
       setMostrarModalYoutube(false);
+      setNotificacao({tipo:"sucesso", texto:"Link salvo com sucesso!"});
+      setTimeout(() => setNotificacao(null), 2400);
     }
   };
-  
+
   // Função para abrir o vídeo do YouTube
   const abrirVideoYoutube = (videoId: number) => {
-    // Verificar se o vídeo está liberado para o usuário atual
     if (!isVideoLiberadoParaUsuario(videoId) && !isAdmin) {
       alert('Este vídeo não está liberado para você.');
       return;
     }
-    
     const link = youtubeLinks[videoId];
     if (link) {
       window.open(link, '_blank');
     }
   };
-  
+
   // Função para verificar se um vídeo está liberado para o usuário atual
   const isVideoLiberadoParaUsuario = (videoId: number) => {
-    // Administrador tem acesso a todos os vídeos
     if (isAdmin) return true;
-    
-    // Verificar se o usuário atual tem permissão para este vídeo
     if (currentUserId) {
       const userIdStr = currentUserId.toString();
       return videosLiberados[userIdStr]?.includes(videoId) || false;
     }
     return false;
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col">
+
+      {/* TOAST DE FEEDBACK */}
+      {notificacao && (
+        <div className={`fixed top-20 right-10 z-40 py-2 px-6 rounded-lg shadow-lg animate-fade-in
+          ${notificacao.tipo === "erro" ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}>
+          {notificacao.texto}
+        </div>
+      )}
+
       {/* Estilos CSS para o mini equalizador */}
       <style jsx>{`
         @keyframes bar1 {
@@ -442,19 +442,16 @@ export default function VideosPage() {
               Painel de Administração
             </button>
           )}
-         <button
-    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-base font-medium rounded-md transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-red-500/50"
-    onClick={() => {
-      // Limpar localStorage
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('username');
-      localStorage.removeItem('isAdmin');
-      localStorage.removeItem('alunoId');
-      
-      // Redirecionar para a raiz usando window.location.href
-      window.location.href = '/';
-    }}
-  >
+          <button
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-base font-medium rounded-md transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-red-500/50"
+            onClick={() => {
+              localStorage.removeItem('isLoggedIn');
+              localStorage.removeItem('username');
+              localStorage.removeItem('isAdmin');
+              localStorage.removeItem('alunoId');
+              window.location.href = '/';
+            }}
+          >
             SAIR
           </button>
         </div>
@@ -519,44 +516,38 @@ export default function VideosPage() {
                   carouselRefs.current[module.id] = el;
                 }}
                 className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide"
-                style={{ 
-                  scrollbarWidth: 'none', 
+                style={{
+                  scrollbarWidth: 'none',
                   msOverflowStyle: 'none',
-                  minHeight: '460px'  // Adicionando altura mínima para acomodar os cards
+                  minHeight: '460px'
                 }}
               >
                 {module.videos.map((video) => (
-                  // Card de vídeo com ícone de cadeado ao passar o mouse
                   <div
                     key={video.id}
                     className="relative"
-                    style={{ 
-                      width: '260px', 
+                    style={{
+                      width: '260px',
                       height: '440px',
                       flexShrink: 0,
                       margin: '0 8px'
                     }}
                   >
-                    {/* Imagem de thumbnail sempre visível */}
                     <img
                       src={video.thumbnail}
                       alt="Thumbnail do vídeo"
                       className="rounded-lg cursor-pointer shadow-lg border border-gray-700 hover:border-orange-500 transition-colors"
-                      style={{ 
-                        width: '260px', 
+                      style={{
+                        width: '260px',
                         height: '440px',
                         objectFit: 'cover',
                         filter: !isVideoLiberadoParaUsuario(video.id) && !isAdmin ? 'grayscale(1) brightness(0.6) contrast(1.2)' : 'none'
                       }}
                       onClick={() => youtubeLinks[video.id] ? abrirVideoYoutube(video.id) : null}
                     />
-                    
-                    {/* Gradiente e botões de ação */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent hover:from-black/50 transition-all duration-300">
-                      {/* Ícones para administradores */}
                       {isAdmin && (
                         <div className="absolute top-2 right-2 flex space-x-2 z-20">
-                          {/* Ícone do YouTube para administradores */}
                           <button
                             onClick={(e) => abrirModalYoutube(e, video)}
                             className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors hover:scale-110 hover:shadow-lg hover:shadow-red-500/50 cursor-pointer transform transition-all duration-200 ease-in-out"
@@ -566,8 +557,6 @@ export default function VideosPage() {
                           </button>
                         </div>
                       )}
-                      
-                      {/* Botão centralizado - Play ou Cadeado dependendo do estado */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <button
                           className={`rounded-full p-3 transform hover:scale-110 transition-transform ${isVideoLiberadoParaUsuario(video.id) || isAdmin ? 'bg-orange-600' : 'bg-gray-800 border-2 border-red-500'}`}
@@ -596,14 +585,12 @@ export default function VideosPage() {
                 ))}
               </div>
             </div>
-            {/* Divisor entre módulos */}
-            {module.id < modulesList.length && (
+            {module.id !== modulesList[modulesList.length - 1].id && (
               <div className="border-b border-gray-700 mt-8"></div>
             )}
           </div>
         ))}
       </div>
-      
       {/* Modal para adicionar link do YouTube */}
       {mostrarModalYoutube && videoSelecionado && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
