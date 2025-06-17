@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { getStudents, addStudent, updateStudent } from "@/services/studentService"; // Importe updateStudent
 
 // Interfaces
 interface Video {
@@ -249,19 +250,59 @@ const abrirModalVideos = (aluno: Aluno) => {
   }, []);
 
   // Funções de manipulação de alunos
-  const adicionarAluno = useCallback((aluno: Omit<Aluno, 'id'>) => {
-    const novoId = Math.max(...alunos.map(a => a.id), 0) + 1;
-    const novoAluno: Aluno = { ...aluno, id: novoId };
-    setAlunos(prev => [...prev, novoAluno]);
+  const adicionarAluno = useCallback(async (aluno: Omit<Aluno, 'id'>) => {
+    await addStudent({
+      name: alunoEmEdicao.nome,
+      password: alunoEmEdicao.senha,
+      module: alunoEmEdicao.modulo,
+      phone: alunoEmEdicao.telefone,
+      email: alunoEmEdicao.email,
+      address: alunoEmEdicao.endereco,
+      birthDate: alunoEmEdicao.dataNascimento,
+      parentName: alunoEmEdicao.nomePaiMae,
+      courseStartDate: alunoEmEdicao.dataInicioCurso,
+      responsiblePhone: alunoEmEdicao.telefoneResponsavel,
+      login: alunoEmEdicao.login,
+      progresso: alunoEmEdicao.progresso || 0,
+      videosLiberados: alunoEmEdicao.videosLiberados || []
+    });
+    const alunosBackend = await getStudents();
+    setAlunos(alunosBackend.map((a: any) => ({
+      ...a,
+      id: typeof a.id === 'number' ? a.id : parseInt(a.id),
+      progresso: a.progresso || 0,
+      videosLiberados: a.videosLiberados || [],
+    })));
     mostrarNotificacao('success', 'Aluno adicionado com sucesso!');
     setModalAberto(false);
     setAlunoEmEdicao(alunoVazio);
-  }, [alunos, mostrarNotificacao]);
+  }, [mostrarNotificacao]);
 
-  const atualizarAluno = useCallback((alunoAtualizado: Aluno) => {
-    setAlunos(prev => prev.map(aluno => 
-      aluno.id === alunoAtualizado.id ? alunoAtualizado : aluno
-    ));
+  const atualizarAluno = useCallback(async (alunoAtualizado: Aluno) => {
+    // Atualiza no backend usando a nova função do service
+    await updateStudent(alunoAtualizado.id.toString(), {
+      nome: alunoAtualizado.nome,
+      email: alunoAtualizado.email,
+      telefone: alunoAtualizado.telefone,
+      endereco: alunoAtualizado.endereco,
+      dataNascimento: alunoAtualizado.dataNascimento,
+      nomePaiMae: alunoAtualizado.nomePaiMae,
+      dataInicioCurso: alunoAtualizado.dataInicioCurso,
+      telefoneResponsavel: alunoAtualizado.telefoneResponsavel,
+      login: alunoAtualizado.login,
+      senha: alunoAtualizado.senha,
+      modulo: alunoAtualizado.modulo,
+      progresso: alunoAtualizado.progresso,
+      videosLiberados: alunoAtualizado.videosLiberados
+    });
+    // Atualiza local
+    const alunosBackend = await getStudents();
+    setAlunos(alunosBackend.map((a: any) => ({
+      ...a,
+      id: typeof a.id === 'number' ? a.id : parseInt(a.id),
+      progresso: a.progresso || 0,
+      videosLiberados: a.videosLiberados || [],
+    })));
     mostrarNotificacao('success', 'Aluno atualizado com sucesso!');
     setModalEdicaoAberto(false);
     setAlunoEmEdicao(alunoVazio);
@@ -346,13 +387,13 @@ const abrirModalVideos = (aluno: Aluno) => {
   }, []);
 
   // Handlers de formulário
-  const handleSubmitAdicionar = useCallback((e: React.FormEvent) => {
+  const handleSubmitAdicionar = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!alunoEmEdicao.nome || !alunoEmEdicao.telefone || !alunoEmEdicao.endereco || !alunoEmEdicao.senha) {
       mostrarNotificacao('error', 'Preencha todos os campos obrigatórios!');
       return;
     }
-    adicionarAluno(alunoEmEdicao);
+    await adicionarAluno(alunoEmEdicao);
   }, [alunoEmEdicao, adicionarAluno, mostrarNotificacao]);
 
   const handleSubmitEditar = useCallback((e: React.FormEvent) => {
@@ -700,6 +741,150 @@ const abrirModalVideos = (aluno: Aluno) => {
           </div>
         </div>
       )}
+      {/* Modal Editar Aluno */}
+      {modalEdicaoAberto && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-semibold mb-6">Editar Aluno</h3>
+            <form onSubmit={handleSubmitEditar} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Nome Completo <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={alunoEmEdicao.nome}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('nome', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Módulo</label>
+                  <select
+                    value={alunoEmEdicao.modulo}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => handleInputChange('modulo', parseInt(e.target.value))}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                  >
+                    {modulesData.map((modulo) => (
+                      <option key={modulo.id} value={modulo.id}>
+                        {modulo.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Telefone <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={alunoEmEdicao.telefone}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('telefone', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={alunoEmEdicao.email}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('email', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2">
+                    Endereço <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={alunoEmEdicao.endereco}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('endereco', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Data de Nascimento</label>
+                  <input
+                    type="text"
+                    placeholder="dd/mm/aaaa"
+                    value={alunoEmEdicao.dataNascimento}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('dataNascimento', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nome do Pai/Mãe</label>
+                  <input
+                    type="text"
+                    value={alunoEmEdicao.nomePaiMae}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('nomePaiMae', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Data de Início do Curso</label>
+                  <input
+                    type="text"
+                    value={alunoEmEdicao.dataInicioCurso}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('dataInicioCurso', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Telefone do Responsável</label>
+                  <input
+                    type="text"
+                    value={alunoEmEdicao.telefoneResponsavel}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('telefoneResponsavel', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Login</label>
+                  <input
+                    type="text"
+                    value={alunoEmEdicao.login}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('login', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Senha <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={alunoEmEdicao.senha}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('senha', e.target.value)}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded px-3 py-2"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={fecharModais}
+                  className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+                >
+                  Salvar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Modal Liberar Vídeos */}
       {modalLiberarVideosAberto && alunoSelecionadoVideos && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -819,4 +1004,4 @@ const abrirModalVideos = (aluno: Aluno) => {
       )} {/* Fecha a renderização condicional do modal */}
     </div>
   );
-}
+};
