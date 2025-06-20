@@ -1,4 +1,4 @@
-import { db } from "@/lib/firebase";
+import { db } from "../firebase/config";
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 
 export const getYoutubeLinks = async () => {

@@ -31,7 +31,7 @@ export default function LoginPage() {
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('username', email);
         localStorage.setItem('isAdmin', 'true');
-        router.push('/videos');
+        router.push('/videos'); // Redireciona para vídeos primeiro
         return;
       }
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
       if (alunosSalvos) {
         const alunos = JSON.parse(alunosSalvos);
         const aluno = alunos.find(
-          (a: any) => a.login === email && a.senha === password
+          (a: any) => a.login === email && (a.password === password || a.senha === password)
         );
         
         if (aluno) {

@@ -1,146 +1,334 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Aluno, Video } from '../types'
+// src/hooks/useDataSync.ts
+import { useState, useEffect, useCallback, Dispatch, SetStateAction } from 'react';
+// Importa os tipos do seu arquivo central
+// O caminho './types' está correto SE types.ts estiver na mesma pasta (src/hooks)
+import {
+  Aluno,
+  Video,
+  Turma, // Importado, mas não usado no código atual
+  VideosLiberados,
+  NotificationData, // Importado, mas não usado no código atual
+  ConfirmacaoState, // Importado, mas não usado no código atual
+  Notificacao, // Importado, mas não usado no código atual
+  Module, // Importado, mas não usado no código atual
+  AlunosDict // Importado, mas não usado no código atual
+} from './types'; // <-- Mantenha './types' se types.ts estiver em src/hooks
 
-// Tipo para o objeto de permissões: { [alunoId: number]: number[] }
-type VideosLiberados = Record<number, number[]>
+// ============================================================================
+// INTERFACE DO RETORNO DO HOOK useDataSync
+// Define o que o hook retorna, incluindo loading e error
+// ============================================================================
+interface DataSyncState {
+  alunos: Aluno[];
+  setAlunos: Dispatch<SetStateAction<Aluno[]>>;
+  adicionarAluno: (novoAluno: Aluno) => void; // Assumindo que é síncrono para localStorage
+  atualizarAluno: (alunoId: string, novosDados: Partial<Aluno>) => void; // Assumindo síncrono
+  removerAluno: (alunoId: string) => void; // Assumindo síncrono
 
-export function useDataSync() {
-  // ALUNOS STATE
-  const [alunos, setAlunos] = useState<Aluno[]>(() => {
-    const data = localStorage.getItem('alunos')
-    return data ? JSON.parse(data) : []
-  })
+  videos: Video[];
+  setVideos: Dispatch<SetStateAction<Video[]>>;
+  adicionarVideo: (novoVideo: Video) => void; // Assumindo síncrono
+  atualizarVideo: (videoAtualizado: Video) => void; // Assumindo síncrono
+  removerVideo: (videoId: number) => void; // Assumindo síncrono
 
-  // VÍDEOS STATE
-  const [videos, setVideos] = useState<Video[]>(() => {
-    const data = localStorage.getItem('videos')
-    return data ? JSON.parse(data) : []
-  })
+  videosLiberados: VideosLiberados;
+  setPermissoesVideosAluno: (alunoId: string, videoIds: number[]) => void; // Assumindo síncrono
+  liberarVideoParaAluno: (alunoId: string, videoId: number) => void; // Assumindo síncrono
+  revogarVideoParaAluno: (alunoId: string, videoId: number) => void; // Assumindo síncrono
+  getVideosLiberadosDoAluno: (alunoId: string) => number[];
 
-  // PERMISSÕES DE VÍDEOS LIBERADOS POR ALUNO
-  // { [alunoId (number)]: [array de ids de videos liberados para esse aluno (number[])] }
-  const [videosLiberados, setVideosLiberados] = useState<VideosLiberados>(() => {
-    const data = localStorage.getItem('videosLiberados')
-    return data ? JSON.parse(data) : {}
-  })
+  loading: boolean; // <-- ADICIONADO
+  error: string | null; // <-- ADICIONADO
+}
+
+// ============================================================================
+// HOOK useDataSync
+// ============================================================================
+export function useDataSync(): DataSyncState { // <-- Adicionado tipo de retorno
+  // Função auxiliar para carregar e converter dados do localStorage
+  // Ajustada para lidar com Aluno.id como string e videosLiberados com chaves string
+  const loadAndConvertData = useCallback(<T>(key: string, defaultValue: T): T => {
+    const data = localStorage.getItem(key);
+    if (!data) return defaultValue;
+    try {
+      const parsedData = JSON.parse(data);
+      if (key === 'alunos' && Array.isArray(parsedData)) {
+        // Não converte aluno.id para number, pois o type é string.
+        // Apenas garante que a estrutura corresponde ao tipo Aluno[].
+        // Pode adicionar validação básica aqui se necessário.
+        return parsedData as T; // Assume que os IDs já são strings no storage
+      }
+      if (key === 'videos' && Array.isArray(parsedData)) {
+          // Converte video.id para number conforme a interface Video
+        return parsedData.map(item => ({
+          ...item,
+          id: Number(item.id) // Garante que o ID do vídeo é number
+        })) as T;
+      }
+      if (key === 'videosLiberados' && typeof parsedData === 'object' && parsedData !== null) {
+        // Converte *apenas* os valores (videoIds) para number.
+        // As chaves (alunoId) permanecem strings conforme Record<string, number[]>.
+        const converted: VideosLiberados = {};
+        // Itera sobre as chaves (que são strings do localStorage)
+        for (const alunoIdString in parsedData) {
+          const videoIds = (parsedData as any)[alunoIdString]; // Cast temporário para acessar propriedade
+          if (Array.isArray(videoIds)) {
+              // Converte cada videoId dentro do array para number
+            converted[alunoIdString] = videoIds
+             .filter((id: any) => typeof id === 'number' || (typeof id === 'string' && !isNaN(Number(id)))) // Filtra valores não numéricos ou strings convertíveis
+             .map((id: any) => Number(id)); // Converte para number
+          } else {
+              // Lida com caso inesperado onde o valor não é um array
+              converted[alunoIdString] = [];
+          }
+        }
+        return converted as T;
+      }
+      // Retorna dados parseados sem conversão específica se a chave não for reconhecida
+      return parsedData as T;
+    } catch (error) {
+      console.error(`Erro ao carregar/parsear dados para a chave "${key}":`, error);
+      // Em caso de erro ao carregar, retorna o valor padrão
+      return defaultValue;
+    }
+  }, []);
+
+  // ALUNOS STATE - Carrega (IDs são strings)
+  const [alunos, setAlunos] = useState<Aluno[]>(() =>
+    loadAndConvertData('alunos', [])
+  );
+  // VÍDEOS STATE - Carrega (IDs são numbers)
+  const [videos, setVideos] = useState<Video[]>(() =>
+    loadAndConvertData('videos', [])
+  );
+  // PERMISSÕES DE VÍDEOS LIBERADOS POR ALUNO - Carrega (Chaves são strings, valores são number[])
+  const [videosLiberados, setVideosLiberados] = useState<VideosLiberados>(() =>
+    loadAndConvertData('videosLiberados', {})
+  );
+
+  // === ESTADOS DE LOADING E ERROR ===
+  // ADICIONADOS: Estado para indicar se os dados estão sendo carregados (inicialmente true)
+  const [loading, setLoading] = useState<boolean>(true);
+  // ADICIONADO: Estado para armazenar mensagens de erro
+  const [error, setError] = useState<string | null>(null);
 
   // Dummy updater só para forçar re-render em storage externo
-  const [lastSync, setLastSync] = useState<number>(Date.now())
+  const [lastSync, setLastSync] = useState<number>(Date.now());
 
   // === SINCRONIZAÇÃO LOCALSTORAGE<->STATE ===
-  // Utilitário para salvar um dado no localStorage e atualizar lastSync
-  const saveData = useCallback((key: string, value: unknown) => {
-    localStorage.setItem(key, JSON.stringify(value))
-    setLastSync(Date.now())
-  }, [])
-
-  // Carrega os dados ao montar/inicializar
+  // Efeito para salvar estados no localStorage sempre que mudam
   useEffect(() => {
-    setAlunos(JSON.parse(localStorage.getItem('alunos') || '[]'))
-    setVideos(JSON.parse(localStorage.getItem('videos') || '[]'))
-    setVideosLiberados(JSON.parse(localStorage.getItem('videosLiberados') || '{}'))
-  }, [lastSync])
+    // Salva alunos (IDs string)
+    localStorage.setItem('alunos', JSON.stringify(alunos));
+    // Salva videos (IDs number)
+    localStorage.setItem('videos', JSON.stringify(videos));
+    // Salva videosLiberados (Chaves string, valores number[])
+    localStorage.setItem('videosLiberados', JSON.stringify(videosLiberados));
+    // Como as operações são síncronas, podemos definir loading como false aqui
+    // após a primeira carga ou após qualquer mudança síncrona refletida no storage.
+    // No entanto, o loading principal deve ser controlado pelo useEffect de carga inicial.
+  }, [alunos, videos, videosLiberados]); // Dependências para salvar no storage
 
-  // Sincroniza quando alunos alteram
+  // Efeito para sincronizar com mudanças externas no localStorage
   useEffect(() => {
-    saveData('alunos', alunos)
-  }, [alunos, saveData])
+    const handleStorageChange = () => {
+      setLastSync(Date.now()); // Atualiza dummy state para forçar re-carga
+    };
+    window.addEventListener('storage', handleStorageChange);
 
-  // Sincroniza quando vídeos alteram
-  useEffect(() => {
-    saveData('videos', videos)
-  }, [videos, saveData])
+    // === LÓGICA DE CARGA INICIAL ===
+    // ADICIONADO: Define loading como true antes de carregar
+    setLoading(true);
+    // ADICIONADO: Limpa erros anteriores
+    setError(null);
+    try {
+       // Recarrega dados na montagem inicial e em cada mudança de lastSync
+       const alunosCarregados = loadAndConvertData('alunos', []);
+       
+       // Migra IDs existentes para formato sequencial se necessário
+       const alunosMigrados = alunosCarregados.map((aluno: Aluno, index: number) => {
+         const novoId = (index + 1).toString().padStart(2, '0');
+         return { ...aluno, id: novoId };
+       });
+       
+       setAlunos(alunosMigrados);
+       setVideos(loadAndConvertData('videos', []));
+       
+       // Migra videosLiberados para usar os novos IDs
+       const videosLiberadosCarregados = loadAndConvertData('videosLiberados', {});
+       const videosLiberadosMigrados: VideosLiberados = {};
+       
+       alunosMigrados.forEach((aluno: Aluno, index: number) => {
+         const novoId = (index + 1).toString().padStart(2, '0');
+         const idAntigo = alunosCarregados[index]?.id;
+         if (idAntigo && videosLiberadosCarregados[idAntigo]) {
+           videosLiberadosMigrados[novoId] = videosLiberadosCarregados[idAntigo];
+         }
+       });
+       
+       setVideosLiberados(videosLiberadosMigrados);
+       // ADICIONADO: Define loading como false após carregar com sucesso
+       setLoading(false);
+    } catch (err: any) {
+       console.error("Erro durante a carga inicial do localStorage:", err);
+       // ADICIONADO: Define o erro se ocorrer
+       setError(err.message || "Erro ao carregar dados iniciais.");
+       // ADICIONADO: Define loading como false mesmo em caso de erro
+       setLoading(false);
+    }
 
-  // Sincroniza quando permissões mudam
-  useEffect(() => {
-    saveData('videosLiberados', videosLiberados)
-  }, [videosLiberados, saveData])
 
-  // ========== CRUD DE ALUNOS ==========
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [loadAndConvertData, lastSync]); // Dependência em loadAndConvertData e lastSync
 
-  const adicionarAluno = useCallback((aluno: Aluno) => {
-    setAlunos((prev: Aluno[]) => [...prev, aluno])
-  }, [])
+  // === FUNÇÕES CRUD E PERMISSÕES ===
+  // As funções abaixo (adicionar, atualizar, remover, setPermissoes)
+  // nesta implementação *síncrona* baseada em localStorage não precisam de loading/error
+  // internos, pois a atualização é imediata. O loading/error do hook
+  // reflete primariamente o estado da carga *inicial* dos dados.
+  // Se você migrar para um backend (Firestore, API), essas funções
+  // precisarão se tornar async e gerenciar loading/error individualmente ou via um estado global.
 
-  const atualizarAluno = useCallback((alunoAtualizado: Aluno) => {
+  // ========== ALUNOS ==========
+  const adicionarAluno = useCallback((novoAluno: Omit<Aluno, 'id'> & { senha?: string }) => {
+    setAlunos((prev: Aluno[]) => {
+      // Gera o próximo ID sequencial
+      const proximoId = prev.length > 0 ? (Math.max(...prev.map(a => parseInt(a.id) || 0)) + 1) : 1;
+      const novoId = proximoId.toString().padStart(2, '0'); // Formato: 01, 02, 03...
+      
+      // Cria o aluno com ID sequencial
+      const alunoCompleto: Aluno = {
+        ...novoAluno,
+        id: novoId,
+        name: novoAluno.nome || novoAluno.name || '',
+        password: novoAluno.senha || novoAluno.password || '',
+        role: 'student',
+        videosLiberados: []
+      };
+      
+      return [...prev, alunoCompleto];
+    });
+  }, []);
+  // alunoId agora é string
+  const atualizarAluno = useCallback((alunoId: string, novosDados: Partial<Aluno>) => {
     setAlunos((prev: Aluno[]) =>
       prev.map((a: Aluno) =>
-        a.id === alunoAtualizado.id ? { ...a, ...alunoAtualizado } : a
+        // Comparação agora é entre strings
+        a.id === alunoId ? { ...a, ...novosDados } : a
       )
-    )
-  }, [])
-
-  const removerAluno = useCallback((alunoId: number) => {
-    setAlunos((prev: Aluno[]) => prev.filter((a: Aluno) => a.id !== alunoId))
+    );
+  }, []);
+  // alunoId agora é string
+  const removerAluno = useCallback((alunoId: string) => {
+    setAlunos((prev: Aluno[]) => {
+      // Remove o aluno
+      const alunosFiltrados = prev.filter((a: Aluno) => a.id !== alunoId);
+      
+      // Reorganiza os IDs sequencialmente
+      const alunosReorganizados = alunosFiltrados.map((aluno, index) => ({
+        ...aluno,
+        id: (index + 1).toString().padStart(2, '0') // 01, 02, 03...
+      }));
+      
+      return alunosReorganizados;
+    });
+    
     setVideosLiberados((prev: VideosLiberados) => {
-      const novo = { ...prev }
-      delete novo[alunoId]
-      return novo
-    })
-  }, [])
-
-  // ========== CRUD DE VÍDEOS ==========
-
-  const adicionarVideo = useCallback((video: Video) => {
-    setVideos((prev: Video[]) => [...prev, video])
-  }, [])
-
+      // Remove as permissões para este aluno e reorganiza as chaves
+      const novo: VideosLiberados = {};
+      const alunosAtualizados = alunos.filter(a => a.id !== alunoId);
+      
+      // Reorganiza as permissões com os novos IDs
+      alunosAtualizados.forEach((aluno, index) => {
+        const novoId = (index + 1).toString().padStart(2, '0');
+        const idAntigo = aluno.id;
+        if (prev[idAntigo]) {
+          novo[novoId] = prev[idAntigo];
+        }
+      });
+      
+      return novo;
+    });
+  }, [alunos]);
+  // ========== VÍDEOS ==========
+  const adicionarVideo = useCallback((novoVideo: Video) => {
+      // novoVideo.id já deve ser number conforme a interface Video
+    setVideos((prev: Video[]) => [...prev, novoVideo]);
+  }, []);
   const atualizarVideo = useCallback((videoAtualizado: Video) => {
+      // videoAtualizado.id já deve ser number
     setVideos((prev: Video[]) =>
       prev.map((v: Video) =>
+        // Comparação é entre numbers
         v.id === videoAtualizado.id ? { ...v, ...videoAtualizado } : v
       )
-    )
-  }, [])
-
+    );
+  }, []);
   const removerVideo = useCallback((videoId: number) => {
-    setVideos((prev: Video[]) => prev.filter((v: Video) => v.id !== videoId))
+    // videoId é number
+    setVideos((prev: Video[]) => prev.filter((v: Video) =>
+        // Comparação é entre numbers
+        v.id !== videoId
+    ));
     setVideosLiberados((prev: VideosLiberados) => {
-      // Remove o videoId das permissões de todos os alunos
-      const novo: VideosLiberados = {}
-      for (const aluno in prev) {
-        const id = Number(aluno)
-        novo[id] = prev[id].filter(vid => vid !== videoId)
+      // Remove o videoId dos arrays de permissões de todos os alunos
+      const novo: VideosLiberados = {};
+      // Itera sobre as chaves (IDs de aluno, que agora são strings)
+      for (const alunoIdString in prev) {
+        const videosDoAluno = prev[alunoIdString] || []; // videosDoAluno é number[]
+        // Filtra o videoId (number) do array de numbers
+        // CORREÇÃO TS7006: Tipagem explícita para 'vid'
+        novo[alunoIdString] = videosDoAluno.filter((vid: number) => vid !== videoId);
       }
-      return novo
-    })
-  }, [])
-
+      return novo;
+    });
+  }, []);
   // ========== PERMISSÕES (LIBERAÇÃO DE VÍDEOS POR ALUNO) ==========
-
   // Retorna array de videoIds liberados para o aluno
-  const getVideosLiberadosDoAluno = useCallback((alunoId: number): number[] => {
-    return videosLiberados[alunoId] || []
-  }, [videosLiberados])
-
+  // alunoId é string
+  const getVideosLiberadosDoAluno = useCallback((alunoId: string): number[] => {
+    // alunoId é string, acesso direto ao objeto com chave string
+    return videosLiberados[alunoId] || [];
+  }, [videosLiberados]);
   // Marca array de vídeos liberados para esse aluno (overwrite)
-  const setPermissoesVideosAluno = useCallback((alunoId: number, videoIds: number[]) => {
+  // alunoId é string, videoIds são number[]
+  const setPermissoesVideosAluno = useCallback((alunoId: string, videoIds: number[]) => {
+    // alunoId é string, videoIds são number[], acesso direto ao objeto com chave string
     setVideosLiberados((prev: VideosLiberados) => ({
       ...prev,
-      [alunoId]: videoIds
-    }))
-  }, [])
-
+      [alunoId]: videoIds // videoIds já são numbers
+    }));
+  }, []);
   // Libera UM vídeo para UM aluno
-  const liberarVideoParaAluno = useCallback((alunoId: number, videoId: number) => {
+  // alunoId é string, videoId é number
+  const liberarVideoParaAluno = useCallback((alunoId: string, videoId: number) => {
+    // alunoId é string, videoId é number
     setVideosLiberados((prev: VideosLiberados) => {
-      const jaTem = prev[alunoId]?.includes(videoId)
-      if (jaTem) return prev
+      const videosAtuais = prev[alunoId] || []; // number[]
+      const jaTem = videosAtuais.includes(videoId); // Comparação number com number
+      if (jaTem) return prev;
       return {
         ...prev,
-        [alunoId]: [...(prev[alunoId] || []), videoId]
-      }
-    })
-  }, [])
-
+        [alunoId]: [...videosAtuais, videoId] // Adiciona videoId (number)
+      };
+    });
+  }, []);
   // Revoga UM vídeo de UM aluno
-  const revogarVideoParaAluno = useCallback((alunoId: number, videoId: number) => {
-    setVideosLiberados((prev: VideosLiberados) => ({
-      ...prev,
-      [alunoId]: (prev[alunoId] || []).filter(id => id !== videoId)
-    }))
-  }, [])
-
+  // alunoId é string, videoId é number
+  const revogarVideoParaAluno = useCallback((alunoId: string, videoId: number) => {
+    // alunoId é string, videoId é number
+    setVideosLiberados((prev: VideosLiberados) => {
+      const videosAtuais = prev[alunoId] || []; // number[]
+      // Filtra videoId (number) do array de numbers
+      // CORREÇÃO TS7006: Tipagem explícita para 'id'
+      return {
+        ...prev,
+        [alunoId]: videosAtuais.filter((id: number) => id !== videoId)
+      };
+    });
+  }, []);
   // =========================
   // === RETORNOS DO HOOK ====
   // =========================
@@ -159,6 +347,8 @@ export function useDataSync() {
     setPermissoesVideosAluno,
     liberarVideoParaAluno,
     revogarVideoParaAluno,
-    getVideosLiberadosDoAluno
-  }
+    getVideosLiberadosDoAluno,
+    loading, // <-- ADICIONADO ao retorno
+    error, // <-- ADICIONADO ao retorno
+  };
 }
