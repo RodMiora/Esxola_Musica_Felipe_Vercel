@@ -91,6 +91,11 @@ const AdminPage: React.FC = () => {
   // Efeito principal para lidar com a autenticação via localStorage
   useEffect(() => {
     const checkAuth = () => {
+      // Verifica se está no ambiente do navegador
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
       const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
       const isAdminUser = localStorage.getItem('isAdmin') === 'true';
 

@@ -9,6 +9,11 @@ export default function Home() {
   useEffect(() => {
     // Verificar se o usuário está logado
     try {
+      // Verifica se está no ambiente do navegador
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
       const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
       if (isLoggedIn) {
         // Se estiver logado, redirecionar para a página de vídeos

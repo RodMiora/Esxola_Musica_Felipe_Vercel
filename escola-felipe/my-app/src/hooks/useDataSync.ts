@@ -48,6 +48,11 @@ export function useDataSync(): DataSyncState { // <-- Adicionado tipo de retorno
   // Função auxiliar para carregar e converter dados do localStorage
   // Ajustada para lidar com Aluno.id como string e videosLiberados com chaves string
   const loadAndConvertData = useCallback(<T>(key: string, defaultValue: T): T => {
+    // Verifica se está no ambiente do navegador
+    if (typeof window === 'undefined') {
+      return defaultValue;
+    }
+    
     const data = localStorage.getItem(key);
     if (!data) return defaultValue;
     try {
@@ -118,6 +123,11 @@ export function useDataSync(): DataSyncState { // <-- Adicionado tipo de retorno
   // === SINCRONIZAÇÃO LOCALSTORAGE<->STATE ===
   // Efeito para salvar estados no localStorage sempre que mudam
   useEffect(() => {
+    // Verifica se está no ambiente do navegador
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     // Salva alunos (IDs string)
     localStorage.setItem('alunos', JSON.stringify(alunos));
     // Salva videos (IDs number)
