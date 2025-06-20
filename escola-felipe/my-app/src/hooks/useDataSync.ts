@@ -146,7 +146,7 @@ export function useDataSync(): DataSyncState { // <-- Adicionado tipo de retorno
        const alunosCarregados = loadAndConvertData('alunos', []);
        
        // Migra IDs existentes para formato sequencial se necessário
-       const alunosMigrados = alunosCarregados.map((aluno: Aluno, index: number) => {
+       const alunosMigrados: Aluno[] = alunosCarregados.map((aluno: Aluno, index: number) => {
          const novoId = (index + 1).toString().padStart(2, '0');
          return { ...aluno, id: novoId };
        });
@@ -155,12 +155,12 @@ export function useDataSync(): DataSyncState { // <-- Adicionado tipo de retorno
        setVideos(loadAndConvertData('videos', []));
        
        // Migra videosLiberados para usar os novos IDs
-       const videosLiberadosCarregados = loadAndConvertData('videosLiberados', {});
+       const videosLiberadosCarregados: VideosLiberados = loadAndConvertData('videosLiberados', {});
        const videosLiberadosMigrados: VideosLiberados = {};
        
        alunosMigrados.forEach((aluno: Aluno, index: number) => {
          const novoId = (index + 1).toString().padStart(2, '0');
-         const idAntigo = alunosCarregados[index]?.id;
+         const idAntigo: string | undefined = alunosCarregados[index]?.id;
          if (idAntigo && videosLiberadosCarregados[idAntigo]) {
            videosLiberadosMigrados[novoId] = videosLiberadosCarregados[idAntigo];
          }
