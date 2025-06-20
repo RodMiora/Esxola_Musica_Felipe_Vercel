@@ -1,4 +1,4 @@
-// src/hooks/types.ts
+// src/hooks/types.ts   
 
 // Representa um aluno do sistema
 export interface Aluno {
