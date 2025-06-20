@@ -745,9 +745,9 @@ const AdminPage: React.FC = () => {
 
       {/* Modal Adicionar Aluno */}
       {modalAberto && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"> {/* Adicionado max-h e overflow */}
-            <h3 className="text-xl font-semibold mb-4 text-white">Adicionar Novo Aluno</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-gray-800 p-3 sm:p-6 rounded-lg shadow-xl w-full max-w-xs sm:max-w-md lg:max-w-lg xl:max-w-xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-white">Adicionar Novo Aluno</h3>
             {/* Mensagem de erro para senha duplicada */}
             {error && error.includes('senha já cadastrada') && (
               <div className="mb-4 p-3 bg-red-600 border border-red-500 rounded-md">
@@ -755,16 +755,16 @@ const AdminPage: React.FC = () => {
               </div>
             )}
             {renderAlunoForm()} {/* Chama a função para renderizar o formulário */}
-            <div className="flex justify-end space-x-4 mt-6">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-6">
               <button
                 onClick={fecharModais}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                className="bg-gray-600 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 rounded text-sm sm:text-base order-2 sm:order-1"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleAdicionarAluno}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-4 py-2 rounded text-sm sm:text-base order-1 sm:order-2"
               >
                 Adicionar
               </button>
@@ -775,9 +775,9 @@ const AdminPage: React.FC = () => {
 
       {/* Modal Editar Aluno */}
       {modalEdicaoAberto && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"> {/* Adicionado max-h e overflow */}
-            <h3 className="text-xl font-semibold mb-4 text-white">Editar Aluno</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-gray-800 p-3 sm:p-6 rounded-lg shadow-xl w-full max-w-xs sm:max-w-md lg:max-w-lg xl:max-w-xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-white">Editar Aluno</h3>
             {/* Mensagem de erro para senha duplicada */}
             {error && error.includes('senha já cadastrada') && (
               <div className="mb-4 p-3 bg-red-600 border border-red-500 rounded-md">
@@ -785,16 +785,16 @@ const AdminPage: React.FC = () => {
               </div>
             )}
             {renderAlunoForm()} {/* Reutiliza o mesmo formulário */}
-            <div className="flex justify-end space-x-4 mt-6">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-6">
               <button
                 onClick={fecharModais}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                className="bg-gray-600 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 rounded text-sm sm:text-base order-2 sm:order-1"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSalvarEdicaoAluno}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-4 py-2 rounded text-sm sm:text-base order-1 sm:order-2"
               >
                 Salvar Alterações
               </button>
