@@ -143,7 +143,7 @@ export function useDataSync(): DataSyncState { // <-- Adicionado tipo de retorno
     setError(null);
     try {
        // Recarrega dados na montagem inicial e em cada mudança de lastSync
-       const alunosCarregados = loadAndConvertData('alunos', []);
+       const alunosCarregados: Aluno[] = loadAndConvertData('alunos', []);
        
        // Migra IDs existentes para formato sequencial se necessário
        const alunosMigrados: Aluno[] = alunosCarregados.map((aluno: Aluno, index: number) => {
