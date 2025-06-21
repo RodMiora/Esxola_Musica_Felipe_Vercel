@@ -1,13 +1,27 @@
 // @ts-ignore
-import { kv } from '@vercel/kv';
-
-// If @vercel/kv is not found, install it using:
-// npm install @vercel/kv
-// or
-// yarn add @vercel/kv
+import { createClient } from 'redis';
 import { Aluno, Video, VideosLiberados } from '../hooks/types';
 
-// Chaves para o KV store
+// Cliente Redis
+let redisClient: any = null;
+
+// Inicializa o cliente Redis
+const getRedisClient = async () => {
+  if (!redisClient) {
+    redisClient = createClient({
+      url: process.env.REDIS_URL
+    });
+    
+    redisClient.on('error', (err: any) => {
+      console.error('Redis Client Error:', err);
+    });
+    
+    await redisClient.connect();
+  }
+  return redisClient;
+};
+
+// Chaves para o Redis store
 const KEYS = {
   ALUNOS: 'escola:alunos',
   VIDEOS: 'escola:videos',
@@ -19,8 +33,9 @@ export class DataService {
   // ========== ALUNOS ==========
   static async getAlunos(): Promise<Aluno[]> {
     try {
-      const alunos = await kv.get<Aluno[]>(KEYS.ALUNOS);
-      return alunos || [];
+      const client = await getRedisClient();
+      const alunos = await client.get(KEYS.ALUNOS);
+      return alunos ? JSON.parse(alunos) : [];
     } catch (error) {
       console.error('Erro ao buscar alunos:', error);
       return [];
@@ -29,8 +44,9 @@ export class DataService {
 
   static async saveAlunos(alunos: Aluno[]): Promise<void> {
     try {
-      await kv.set(KEYS.ALUNOS, alunos);
-      await kv.set(KEYS.LAST_UPDATED, Date.now());
+      const client = await getRedisClient();
+      await client.set(KEYS.ALUNOS, JSON.stringify(alunos));
+      await client.set(KEYS.LAST_UPDATED, Date.now().toString());
     } catch (error) {
       console.error('Erro ao salvar alunos:', error);
       throw error;
@@ -115,8 +131,9 @@ export class DataService {
   // ========== VIDEOS ==========
   static async getVideos(): Promise<Video[]> {
     try {
-      const videos = await kv.get<Video[]>(KEYS.VIDEOS);
-      return videos || [];
+      const client = await getRedisClient();
+      const videos = await client.get(KEYS.VIDEOS);
+      return videos ? JSON.parse(videos) : [];
     } catch (error) {
       console.error('Erro ao buscar vídeos:', error);
       return [];
@@ -125,8 +142,9 @@ export class DataService {
 
   static async saveVideos(videos: Video[]): Promise<void> {
     try {
-      await kv.set(KEYS.VIDEOS, videos);
-      await kv.set(KEYS.LAST_UPDATED, Date.now());
+      const client = await getRedisClient();
+      await client.set(KEYS.VIDEOS, JSON.stringify(videos));
+      await client.set(KEYS.LAST_UPDATED, Date.now().toString());
     } catch (error) {
       console.error('Erro ao salvar vídeos:', error);
       throw error;
@@ -171,8 +189,9 @@ export class DataService {
   // ========== VIDEOS LIBERADOS ==========
   static async getVideosLiberados(): Promise<VideosLiberados> {
     try {
-      const videosLiberados = await kv.get<VideosLiberados>(KEYS.VIDEOS_LIBERADOS);
-      return videosLiberados || {};
+      const client = await getRedisClient();
+      const videosLiberados = await client.get(KEYS.VIDEOS_LIBERADOS);
+      return videosLiberados ? JSON.parse(videosLiberados) : {};
     } catch (error) {
       console.error('Erro ao buscar vídeos liberados:', error);
       return {};
@@ -181,8 +200,9 @@ export class DataService {
 
   static async saveVideosLiberados(videosLiberados: VideosLiberados): Promise<void> {
     try {
-      await kv.set(KEYS.VIDEOS_LIBERADOS, videosLiberados);
-      await kv.set(KEYS.LAST_UPDATED, Date.now());
+      const client = await getRedisClient();
+      await client.set(KEYS.VIDEOS_LIBERADOS, JSON.stringify(videosLiberados));
+      await client.set(KEYS.LAST_UPDATED, Date.now().toString());
     } catch (error) {
       console.error('Erro ao salvar vídeos liberados:', error);
       throw error;
@@ -232,8 +252,9 @@ export class DataService {
   // ========== UTILITÁRIOS ==========
   static async getLastUpdated(): Promise<number> {
     try {
-      const timestamp = await kv.get<number>(KEYS.LAST_UPDATED);
-      return timestamp || 0;
+      const client = await getRedisClient();
+      const timestamp = await client.get(KEYS.LAST_UPDATED);
+      return timestamp ? parseInt(timestamp) : 0;
     } catch (error) {
       console.error('Erro ao buscar última atualização:', error);
       return 0;
