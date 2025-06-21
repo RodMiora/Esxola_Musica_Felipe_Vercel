@@ -15,7 +15,7 @@ import {
 } from './types'; // <-- Mantenha './types' se types.ts estiver em src/hooks
 
 // Importa o DataService para usar Vercel KV
-import { DataService } from '../../../../src/services/dataService';
+import { DataService } from '../services/dataService';
 
 // ============================================================================
 // INTERFACE DO RETORNO DO HOOK useDataSync
@@ -171,7 +171,7 @@ export function useDataSync(): DataSyncState {
       setLoading(true);
       setError(null);
       
-      await DataService.atualizarVideo(videoAtualizado);
+      await DataService.atualizarVideo(videoAtualizado.id, videoAtualizado);
       await refreshData(); // Recarrega os dados após atualizar
     } catch (err: any) {
       console.error('Erro ao atualizar vídeo:', err);
